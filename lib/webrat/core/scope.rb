@@ -135,6 +135,8 @@ module Webrat
     #   select_date "April 26, 1982", :from => "Birthday"
     #   select_date Date.parse("December 25, 2000"), :from => "Event"
     #   select_date "April 26, 1982", :id_prefix => 'birthday'
+    #   select_date "4/26/1982", :use_month_numbers => true
+    #   select_date "Apr 26, 1982", :use_short_month => true
     def select_date(date_to_select, options ={})
       date = date_to_select.is_a?(Date) || date_to_select.is_a?(Time) ?
                 date_to_select : Date.parse(date_to_select)
@@ -144,9 +146,17 @@ module Webrat
         raise NotFoundError.new("No date fields were found") unless year_field && year_field.id =~ /(.*?)_1i/
         $1
       end
-
+      
+      month = if options[:use_month_numbers] then 
+                date.month
+              elsif options[:use_short_month] then 
+                date.strftime('%b')
+              else  
+                date.strftime('%B')
+              end
+              
       select date.year, :from => "#{id_prefix}_#{DATE_TIME_SUFFIXES[:year]}"
-      select date.strftime('%B'), :from => "#{id_prefix}_#{DATE_TIME_SUFFIXES[:month]}"
+      select month, :from => "#{id_prefix}_#{DATE_TIME_SUFFIXES[:month]}"
       select date.day, :from => "#{id_prefix}_#{DATE_TIME_SUFFIXES[:day]}"
     end
 

@@ -71,6 +71,52 @@ describe "select_date" do
     select_date "December 25, 2003"
     click_button
   end
+  
+  it "should work with month numbers" do
+    with_html <<-HTML
+      <html>
+      <form action="/appointments" method="post">
+        <select id="appointment_date_1i" name="appointment[date(1i)]">
+          <option value="2003">2003</option>
+        </select>
+        <select id="appointment_date_2i" name="appointment[date(2i)]">
+          <option value="12">12</option>
+        </select>
+        <select id="appointment_date_3i" name="appointment[date(3i)]">
+          <option value="25">25</option>
+        </select>
+        <input type="submit" />
+      </form>
+      </html>
+    HTML
+    webrat_session.should_receive(:post).with("/appointments",
+      "appointment" => {"date(1i)" => '2003', "date(2i)" => "12", "date(3i)" => "25"})
+    select_date "12/25/2003", :use_month_numbers => true
+    click_button
+  end
+  
+  it "should work with short month names" do
+    with_html <<-HTML
+      <html>
+      <form action="/appointments" method="post">
+        <select id="appointment_date_1i" name="appointment[date(1i)]">
+          <option value="2003">2003</option>
+        </select>
+        <select id="appointment_date_2i" name="appointment[date(2i)]">
+          <option value="12">Dec</option>
+        </select>
+        <select id="appointment_date_3i" name="appointment[date(3i)]">
+          <option value="25">25</option>
+        </select>
+        <input type="submit" />
+      </form>
+      </html>
+    HTML
+    webrat_session.should_receive(:post).with("/appointments",
+      "appointment" => {"date(1i)" => '2003', "date(2i)" => "12", "date(3i)" => "25"})
+    select_date "Dec 25, 2003", :use_short_month => true
+    click_button
+  end
 
   it "should fail if the specified label is not found" do
     with_html <<-HTML
